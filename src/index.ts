@@ -4,7 +4,7 @@ import { styles } from './styles';
 injectStyles(styles);
 
 export { ToastProvider, useToast, useToastContext } from './ToastContext';
-export type { ToastData, ToastContextValue, ToastProviderProps } from './ToastContext';
+export type { ToastData, InternalToast, ToastContextValue, ToastProviderProps, ToastRenderProps } from './ToastContext';
 
 export { default as ToastContainer } from './ToastContainer';
 export type { ToastContainerProps } from './ToastContainer';

@@ -1,6 +1,14 @@
 import { createContext, useContext, useCallback, useRef, useState, type ReactNode } from 'react';
 import type { SpringPreset, SpringConfig, AnimationVariant, Position } from './spring';
 
+export interface ToastRenderProps {
+  id: string;
+  message: string;
+  type?: 'default' | 'success' | 'error' | 'warning' | 'info';
+  position: Position;
+  dismiss: () => void;
+}
+
 export interface ToastData {
   id: string;
   message: string;
@@ -10,9 +18,10 @@ export interface ToastData {
   position?: Position;
   animation?: AnimationVariant;
   spring?: SpringPreset | SpringConfig;
+  render?: (props: ToastRenderProps) => ReactNode;
 }
 
-interface InternalToast extends ToastData {
+export interface InternalToast extends ToastData {
   removing: boolean;
 }
 

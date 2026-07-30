@@ -18,6 +18,7 @@ export const styles = `
   --rt-close-hover: #475569;
 }
 
+/* ─── Container (fixed viewport slots) ─── */
 .rt-container {
   position: fixed;
   z-index: 10000;
@@ -82,6 +83,7 @@ export const styles = `
   flex-direction: column-reverse;
 }
 
+/* ─── Toast item ─── */
 .rt-item {
   pointer-events: auto;
   display: flex;
@@ -98,6 +100,11 @@ export const styles = `
   font-size: 0.9rem;
   line-height: 1.5;
   color: var(--rt-text);
+  will-change: transform, opacity;
+}
+
+.rt-item-wrapper {
+  pointer-events: auto;
   will-change: transform, opacity;
 }
 
@@ -135,6 +142,7 @@ export const styles = `
   color: var(--rt-close-hover);
 }
 
+/* ─── Type variants ─── */
 .rt-item--success {
   border-color: #d1fae5;
   background: var(--rt-success-bg);
@@ -171,6 +179,7 @@ export const styles = `
   color: var(--rt-info);
 }
 
+/* ─── Reduced motion ─── */
 @media (prefers-reduced-motion: reduce) {
   .rt-item {
     animation: none !important;

@@ -8,6 +8,8 @@
 
 Zero-dependency React toast notification library with spring physics animations powered by the Web Animations API.
 
+- **Custom render** — override toast UI with your own component via `render` prop
+- **Container render fn** — override all toasts globally via `ToastContainer` children
 - **7 animation variants** — slide, scale, fade, none
 - **5 spring presets** — default, gentle, wobbly, stiff, slow
 - **8 positions** — all corners + center edges
@@ -56,8 +58,8 @@ function MyComponent() {
 | Component | Purpose |
 |---|---|
 | `ToastProvider` | Root provider. Manages toast state, timers, max limit, and defaults. |
-| `ToastContainer` | Renders toasts into `document.body` via portal. Groups by position. |
-| `ToastItem` | Individual toast with icon, message, close button, and spring-animated enter/exit. |
+| `ToastContainer` | Renders toasts into `document.body` via portal. Groups by position. Supports `children` render fn for global override. |
+| `ToastItem` | Individual toast with icon, message, close button, and spring-animated enter/exit. Supports `render` prop for custom UI. |
 
 ## Hooks
 
@@ -86,6 +88,7 @@ function MyComponent() {
 | `position` | `Position` | — | Override position for all toasts in this container. |
 | `animation` | `AnimationVariant` | — | Override animation for all toasts. |
 | `spring` | `SpringPreset \| SpringConfig` | — | Override spring for all toasts. |
+| `children` | `(toasts, dismiss) => ReactNode` | — | Render fn to override all toasts with custom UI. |
 
 ### ToastItem
 
@@ -99,6 +102,21 @@ function MyComponent() {
 | `animation` | `AnimationVariant` | — | Animation variant. |
 | `spring` | `SpringPreset \| SpringConfig` | — | Spring config. |
 | `onDismiss` | `(id: string) => void` | — | Called when toast is dismissed. |
+| `render` | `(props: ToastRenderProps) => ReactNode` | — | Custom render function. |
+
+## ToastRenderProps
+
+Passed to `render` functions:
+
+```ts
+interface ToastRenderProps {
+  id: string;
+  message: string;
+  type?: 'default' | 'success' | 'error' | 'warning' | 'info';
+  position: Position;
+  dismiss: () => void;
+}
+```
 
 ## Toast Data
 
@@ -114,6 +132,7 @@ interface ToastData {
   position?: Position;
   animation?: AnimationVariant;
   spring?: SpringPreset | SpringConfig;
+  render?: (props: ToastRenderProps) => ReactNode;
 }
 ```
 
@@ -134,6 +153,54 @@ error('Failed to save', { animation: 'scale', spring: 'stiff' });
 // Dismiss by ID
 const id = toast('Loading...');
 dismiss(id);
+```
+
+## Custom Render (Per-Toast)
+
+Override a single toast with your own component:
+
+```tsx
+function ProgressBar({ message, dismiss }: ToastRenderProps) {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress((p) => (p >= 100 ? (clearInterval(interval), 100) : p + 2));
+    }, 60);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="my-progress-toast">
+      <span>{message}</span>
+      <div className="bar" style={{ width: `${progress}%` }} />
+      <button onClick={dismiss}>Cancel</button>
+    </div>
+  );
+}
+
+// Use it
+toast('Uploading...', {
+  render: (props) => <ProgressBar {...props} />,
+  duration: 0,
+});
+```
+
+## Global Container Render Override
+
+Override **all** toasts via `ToastContainer` children render fn:
+
+```tsx
+<ToastContainer>
+  {(toasts, dismiss) =>
+    toasts.map((t) => (
+      <div key={t.id} className="my-dark-toast">
+        <span>{t.message}</span>
+        <button onClick={() => dismiss(t.id)}>Close</button>
+      </div>
+    ))
+  }
+</ToastContainer>
 ```
 
 ## Animation Variants
@@ -346,6 +413,46 @@ async function handleSave() {
 }
 ```
 
+### Minimal Custom Toast
+
+```tsx
+function MinimalToast({ message, dismiss }: ToastRenderProps) {
+  return (
+    <div className="minimal-toast">
+      <span>{message}</span>
+      <button onClick={dismiss}>&times;</button>
+    </div>
+  );
+}
+
+toast('File saved', { render: (props) => <MinimalToast {...props} /> });
+```
+
+### Progress Bar Toast
+
+```tsx
+function ProgressToast({ message, dismiss }: ToastRenderProps) {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress((p) => (p >= 100 ? (clearInterval(interval), 100) : p + 2));
+    }, 60);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div>
+      <span>{message} — {progress}%</span>
+      <div style={{ width: `${progress}%`, height: 4, background: 'green' }} />
+      <button onClick={dismiss}>Cancel</button>
+    </div>
+  );
+}
+
+toast('Uploading...', { render: (props) => <ProgressToast {...props} />, duration: 0 });
+```
+
 ## Accessibility
 
 - `role="alert"` and `aria-live="assertive"` on each toast
@@ -360,6 +467,7 @@ All component props, spring types, and animation types are fully typed and expor
 ```tsx
 import type {
   ToastData,
+  ToastRenderProps,
   ToastContextValue,
   ToastProviderProps,
   ToastContainerProps,

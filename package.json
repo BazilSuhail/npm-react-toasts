@@ -1,6 +1,6 @@
 {
   "name": "entity-react-toasts",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Zero-dependency React toast notification library with spring physics animations via WAAPI",
   "type": "module",
   "main": "./dist/index.cjs",

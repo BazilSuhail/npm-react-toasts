@@ -1,6 +1,7 @@
-import { useRef, useEffect, useCallback, type CSSProperties } from 'react';
+import { useRef, useEffect, useCallback, type ReactNode, type CSSProperties } from 'react';
 import { animateIn, animateOut, type AnimateConfig } from './animate';
 import type { Position } from './spring';
+import type { ToastRenderProps } from './ToastContext';
 
 export interface ToastItemProps {
   id: string;
@@ -11,6 +12,7 @@ export interface ToastItemProps {
   animation?: AnimateConfig['animation'];
   spring?: AnimateConfig['spring'];
   onDismiss: (id: string) => void;
+  render?: (props: ToastRenderProps) => ReactNode;
 }
 
 const TYPE_ICONS: Record<string, string> = {
@@ -30,6 +32,7 @@ export default function ToastItem({
   animation,
   spring,
   onDismiss,
+  render,
 }: ToastItemProps) {
   const elRef = useRef<HTMLDivElement>(null);
 
@@ -45,6 +48,18 @@ export default function ToastItem({
       onDismiss(id);
     });
   }, [id, onDismiss, animation, spring, position]);
+
+  if (render) {
+    return (
+      <div
+        ref={elRef}
+        className="rt-item-wrapper"
+        style={{ opacity: 0 } as CSSProperties}
+      >
+        {render({ id, message, type, position, dismiss: handleDismiss })}
+      </div>
+    );
+  }
 
   const icon = TYPE_ICONS[type];
 
